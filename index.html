@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  AGENTIC REMEDIATION ROI CALCULATOR — Endor Labs
+  ═══════════════════════════════════════════════════════════════════════════
+  Source of truth: "Agentic Remediation Token ROI Calculator" spreadsheet
+  (Steps A → B → C). All defaults, multipliers, and formulas match the sheet.
+
+  FOR THE WEB TEAM — two ways to use this:
+
+  1) EMBED (recommended): this file contains two marker comments, each on
+     its own line, reading "ARC-EMBED-START" and "ARC-EMBED-END". Copy
+     everything between them (inclusive) into any page or CMS rich-HTML
+     block. All CSS is scoped under #endor-arc and all JS runs in an IIFE
+     against that root — it will not collide with site styles. If the site
+     already loads Switzer, delete the @import line at the top of the
+     <style> block. Copy cleanly: stray text or tags pasted before the
+     <style> block can break CSS parsing in subtle ways.
+
+  2) IFRAME: host this file as-is and iframe it. It is fully self-contained
+     (no external dependencies beyond the font import, which degrades to
+     system fonts gracefully).
+
+  TODO for web team (marked ARC-TODO below):
+    • Wire the CTA href (talk to the Endor Labs AI FinOps team)
+    • Optional: add your analytics events on [data-arc-cta] clicks
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Remediation ROI Calculator | Endor Labs</title>
+<meta name="description" content="Estimate what agentic remediation costs your team per year — and how much deterministic security context from Endor Labs cuts the token bill per fix.">
+</head>
+<body style="margin:0;background:#000503">
+
+<!-- ARC-EMBED-START -->
+<style>
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  #endor-arc{
+    /* ── Endor Labs tokens ── */
+    --arc-green:#00f078;
+    --arc-green-logo:#26D07C;
+    --arc-green-dark:#009f50;
+    --arc-blue:#3fe1f3;
+    --arc-purple:#9f69f7;
+    --arc-black:#000503;
+    --arc-panel:#0d100f;
+    --arc-panel-2:#121615;
+    --arc-border:#232827;
+    --arc-white:#ffffff;
+    --arc-grey:#94bfa9;
+    --arc-grey-2:#acb2b7;
+    --arc-grey-3:#5f666d;
+    /* ── chart series (validated for CVD + contrast on dark surface) ── */
+    --arc-seat:#1ba4b8;      /* seat licenses            */
+    --arc-tokens:#9f69f7;    /* AI token bill            */
+    --arc-avoided:#1fae67;   /* avoided with Endor Labs  */
+
+    background:
+      radial-gradient(1100px 520px at 82% -8%, rgba(0,240,120,.09), transparent 60%),
+      radial-gradient(900px 480px at 0% 112%, rgba(159,105,247,.07), transparent 55%),
+      var(--arc-black);
+    color:var(--arc-white);
+    font-family:'Switzer',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    letter-spacing:-.01em;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  #endor-arc *{box-sizing:border-box;margin:0;padding:0;}
+  #endor-arc .arc-stage{max-width:1080px;margin:0 auto;padding:56px 48px 64px;}
+  @media(max-width:720px){#endor-arc .arc-stage{padding:40px 20px 48px;}}
+
+  /* ── header ── */
+  #endor-arc .arc-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:44px;}
+  #endor-arc .arc-top svg{height:20px;width:auto;display:block;}
+  #endor-arc .arc-eyebrow{
+    display:inline-flex;align-items:center;gap:9px;
+    color:var(--arc-green);font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+    border:1px solid var(--arc-green-dark);border-radius:999px;padding:6px 14px;
+    background:rgba(0,240,120,.06);
+  }
+  #endor-arc .arc-eyebrow .arc-dot{width:7px;height:7px;border-radius:50%;background:var(--arc-green);box-shadow:0 0 10px var(--arc-green);}
+
+  #endor-arc h1{
+    font-size:44px;line-height:1.08;font-weight:600;letter-spacing:-.035em;
+    margin:0 0 18px;
+  }
+  @media(max-width:720px){#endor-arc h1{font-size:33px;}}
+  #endor-arc h1 .arc-grad{
+    background:linear-gradient(90deg,var(--arc-green),var(--arc-blue) 62%,var(--arc-purple));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  #endor-arc .arc-lead{font-size:18px;line-height:1.55;color:var(--arc-grey-2);margin-bottom:48px;}
+  #endor-arc .arc-lead b{color:var(--arc-white);font-weight:600;}
+
+  /* ── section scaffolding ── */
+  #endor-arc .arc-section{margin-bottom:40px;}
+  #endor-arc .arc-sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:20px;}
+  #endor-arc .arc-sec-num{
+    font-size:13px;font-weight:600;color:var(--arc-green);letter-spacing:.08em;
+    font-variant-numeric:tabular-nums;
+  }
+  #endor-arc .arc-sec-head h2{font-size:22px;font-weight:600;letter-spacing:-.02em;}
+  #endor-arc .arc-sec-head .arc-sec-note{font-size:14px;color:var(--arc-grey-3);}
+
+  #endor-arc .arc-panel{
+    background:linear-gradient(180deg,var(--arc-panel-2),var(--arc-panel));
+    border:1px solid var(--arc-border);border-radius:18px;padding:28px;
+  }
+  @media(max-width:720px){#endor-arc .arc-panel{padding:20px;}}
+
+  /* ── inputs ── */
+  #endor-arc .arc-inputs{display:grid;grid-template-columns:1fr 1fr;gap:26px 36px;}
+  @media(max-width:840px){#endor-arc .arc-inputs{grid-template-columns:1fr;}}
+  #endor-arc .arc-field label{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    font-size:15px;font-weight:600;margin-bottom:12px;
+  }
+  #endor-arc .arc-field label .arc-hint{font-size:13px;font-weight:400;color:var(--arc-grey-3);text-align:right;}
+  #endor-arc .arc-row{display:flex;align-items:center;gap:16px;}
+  #endor-arc input[type=range]{
+    flex:1;appearance:none;-webkit-appearance:none;height:6px;border-radius:3px;
+    background:linear-gradient(to right,var(--arc-green-logo) 50%,var(--arc-border) 50%);
+    outline:none;cursor:pointer;
+  }
+  #endor-arc input[type=range]::-webkit-slider-thumb{
+    appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:var(--arc-green);border:3px solid var(--arc-black);box-shadow:0 0 0 1px var(--arc-green-dark),0 0 12px rgba(0,240,120,.4);
+  }
+  #endor-arc input[type=range]::-moz-range-thumb{
+    width:12px;height:12px;border-radius:50%;
+    background:var(--arc-green);border:3px solid var(--arc-black);box-shadow:0 0 0 1px var(--arc-green-dark),0 0 12px rgba(0,240,120,.4);
+  }
+  #endor-arc input[type=range]:focus-visible{outline:2px solid var(--arc-green);outline-offset:4px;}
+  #endor-arc input[type=number]{
+    width:88px;background:var(--arc-black);border:1px solid var(--arc-border);border-radius:9px;
+    color:var(--arc-white);font:inherit;font-size:15px;font-weight:600;padding:8px 10px;text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  #endor-arc input[type=number]:focus-visible{outline:2px solid var(--arc-green);outline-offset:1px;border-color:var(--arc-green-dark);}
+
+  /* model cards */
+  #endor-arc .arc-models{grid-column:1 / -1;}
+  #endor-arc .arc-model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  @media(max-width:720px){#endor-arc .arc-model-grid{grid-template-columns:1fr;}}
+  #endor-arc .arc-model{position:relative;}
+  #endor-arc .arc-model input{position:absolute;opacity:0;pointer-events:none;}
+  #endor-arc .arc-model-card{
+    display:block;cursor:pointer;border:1px solid var(--arc-border);border-radius:13px;
+    background:var(--arc-black);padding:14px 16px;transition:border-color .15s,background .15s;
+  }
+  #endor-arc .arc-model input:checked + .arc-model-card{
+    border-color:var(--arc-green-dark);background:rgba(0,240,120,.05);
+    box-shadow:0 0 0 1px var(--arc-green-dark);
+  }
+  #endor-arc .arc-model input:focus-visible + .arc-model-card{outline:2px solid var(--arc-green);outline-offset:2px;}
+  #endor-arc .arc-model-name{font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  #endor-arc .arc-model-name .arc-ref-tag{
+    font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--arc-grey-3);
+    border:1px solid var(--arc-border);border-radius:5px;padding:2px 6px;
+  }
+  #endor-arc .arc-model input:checked + .arc-model-card .arc-model-name{color:var(--arc-green);}
+  #endor-arc .arc-model-price{font-size:13px;color:var(--arc-grey-2);margin-top:5px;font-variant-numeric:tabular-nums;}
+
+  /* disclosure blocks */
+  #endor-arc details{border:1px solid var(--arc-border);border-radius:14px;background:var(--arc-panel);margin-top:16px;}
+  #endor-arc summary{
+    list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;
+    padding:15px 20px;font-size:14.5px;font-weight:600;color:var(--arc-grey-2);
+  }
+  #endor-arc summary::-webkit-details-marker{display:none;}
+  #endor-arc summary:focus-visible{outline:2px solid var(--arc-green);outline-offset:2px;border-radius:14px;}
+  #endor-arc summary .arc-chev{
+    width:16px;height:16px;flex:none;transition:transform .18s;
+    stroke:var(--arc-grey-3);fill:none;stroke-width:2;
+  }
+  #endor-arc details[open] summary .arc-chev{transform:rotate(90deg);}
+  #endor-arc details[open] summary{color:var(--arc-white);}
+  #endor-arc .arc-details-body{padding:6px 20px 22px;}
+
+  /* advanced assumptions */
+  #endor-arc .arc-adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px 36px;}
+  @media(max-width:840px){#endor-arc .arc-adv-grid{grid-template-columns:1fr;}}
+  #endor-arc .arc-reset{
+    margin-top:20px;background:transparent;border:1px solid var(--arc-border);border-radius:9px;
+    color:var(--arc-grey-2);font:inherit;font-size:13.5px;font-weight:600;padding:9px 16px;cursor:pointer;
+  }
+  #endor-arc .arc-reset:hover{border-color:var(--arc-grey-3);color:var(--arc-white);}
+  #endor-arc .arc-reset:focus-visible{outline:2px solid var(--arc-green);outline-offset:2px;}
+
+  /* ── results ── */
+  #endor-arc .arc-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:30px;}
+  #endor-arc .arc-hero-label{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--arc-grey-3);margin-bottom:6px;}
+  #endor-arc .arc-hero-num{
+    font-size:56px;font-weight:600;letter-spacing:-.03em;line-height:1;
+    color:var(--arc-green);font-variant-numeric:tabular-nums;text-shadow:0 0 34px rgba(0,240,120,.25);
+  }
+  @media(max-width:720px){#endor-arc .arc-hero-num{font-size:42px;}}
+  #endor-arc .arc-hero-chip{
+    display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:var(--arc-green);
+    border:1px solid var(--arc-green-dark);border-radius:999px;padding:8px 15px;background:rgba(0,240,120,.06);
+    font-variant-numeric:tabular-nums;
+  }
+  #endor-arc .arc-hero-chip svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;}
+
+  /* chart */
+  #endor-arc .arc-chart{display:flex;flex-direction:column;gap:22px;margin-bottom:26px;}
+  #endor-arc .arc-bar-row .arc-bar-label{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    font-size:14px;font-weight:600;color:var(--arc-grey-2);margin-bottom:8px;
+  }
+  #endor-arc .arc-bar-total{font-size:15px;color:var(--arc-white);font-variant-numeric:tabular-nums;}
+  #endor-arc .arc-track{display:flex;gap:2px;height:46px;}
+  #endor-arc .arc-seg{
+    position:relative;display:flex;align-items:center;justify-content:center;
+    min-width:0;overflow:visible;transition:width .45s cubic-bezier(.22,1,.36,1);
+  }
+  #endor-arc .arc-seg:last-child{border-radius:0 4px 4px 0;}
+  #endor-arc .arc-seg:first-child{border-radius:4px 0 0 4px;}
+  #endor-arc .arc-seg--seat{background:var(--arc-seat);}
+  #endor-arc .arc-seg--tokens{background:var(--arc-tokens);}
+  #endor-arc .arc-seg--avoided{
+    background:repeating-linear-gradient(135deg,rgba(31,174,103,.18) 0 6px,transparent 6px 12px);
+    border:1.5px dashed var(--arc-avoided);border-radius:0 4px 4px 0;
+  }
+  #endor-arc .arc-seg-val{
+    font-size:13px;font-weight:600;color:var(--arc-white);white-space:nowrap;
+    font-variant-numeric:tabular-nums;pointer-events:none;
+  }
+  #endor-arc .arc-seg--avoided .arc-seg-val{color:var(--arc-avoided);}
+  #endor-arc .arc-seg[data-tip]:hover::after{
+    content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+    background:var(--arc-black);border:1px solid var(--arc-border);border-radius:8px;
+    padding:7px 11px;font-size:12.5px;font-weight:500;color:var(--arc-white);white-space:nowrap;
+    box-shadow:0 6px 22px rgba(0,0,0,.5);z-index:5;font-variant-numeric:tabular-nums;
+  }
+  #endor-arc .arc-legend{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:30px;}
+  #endor-arc .arc-legend span{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--arc-grey-2);}
+  #endor-arc .arc-swatch{width:12px;height:12px;border-radius:3px;flex:none;}
+  #endor-arc .arc-swatch--avoided{background:repeating-linear-gradient(135deg,rgba(31,174,103,.25) 0 3px,transparent 3px 6px);border:1.5px dashed var(--arc-avoided);}
+
+  /* stat tiles */
+  #endor-arc .arc-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media(max-width:720px){#endor-arc .arc-tiles{grid-template-columns:1fr;}}
+  #endor-arc .arc-tile{
+    background:var(--arc-black);border:1px solid var(--arc-border);border-radius:13px;padding:18px 20px;
+  }
+  #endor-arc .arc-tile .arc-tile-label{font-size:12.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--arc-grey-3);margin-bottom:8px;}
+  #endor-arc .arc-tile .arc-tile-num{font-size:24px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+  #endor-arc .arc-tile .arc-tile-sub{font-size:13px;color:var(--arc-grey-3);margin-top:4px;font-variant-numeric:tabular-nums;}
+  #endor-arc .arc-tile--save .arc-tile-num{color:var(--arc-green);}
+
+  /* compare table */
+  #endor-arc .arc-table-wrap{overflow-x:auto;}
+  #endor-arc table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;}
+  #endor-arc th{
+    text-align:right;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--arc-grey-3);padding:8px 14px;border-bottom:1px solid var(--arc-border);
+  }
+  #endor-arc th:first-child,#endor-arc td:first-child{text-align:left;padding-left:4px;}
+  #endor-arc td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--arc-border);color:var(--arc-grey-2);}
+  #endor-arc tr:last-child td{border-bottom:none;}
+  #endor-arc tr.arc-active td{color:var(--arc-white);background:rgba(0,240,120,.04);}
+  #endor-arc tr.arc-active td:first-child{color:var(--arc-green);font-weight:600;}
+  #endor-arc td.arc-save-col{color:var(--arc-green);font-weight:600;}
+
+  /* methodology steps */
+  #endor-arc .arc-steps{display:flex;flex-direction:column;gap:18px;}
+  #endor-arc .arc-step{display:flex;gap:16px;align-items:flex-start;}
+  #endor-arc .arc-step-badge{
+    flex:none;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,240,120,.08);border:1px solid var(--arc-green-dark);color:var(--arc-green);
+    font-size:13px;font-weight:600;
+  }
+  #endor-arc .arc-step h4{font-size:15px;font-weight:600;margin-bottom:4px;}
+  #endor-arc .arc-step p{font-size:14px;color:var(--arc-grey-2);line-height:1.6;}
+  #endor-arc .arc-formula{
+    display:inline-block;background:var(--arc-black);border:1px solid var(--arc-border);border-radius:7px;
+    padding:3px 9px;font-size:13px;color:var(--arc-grey);margin:3px 0;font-variant-numeric:tabular-nums;
+  }
+  #endor-arc .arc-step p b{color:var(--arc-white);font-variant-numeric:tabular-nums;}
+
+  /* sources */
+  #endor-arc .arc-sources{list-style:none;display:flex;flex-direction:column;gap:12px;}
+  #endor-arc .arc-sources li{
+    font-size:14px;color:var(--arc-grey-2);line-height:1.6;padding-left:22px;position:relative;
+  }
+  #endor-arc .arc-sources li::before{
+    content:"";position:absolute;left:2px;top:9px;width:7px;height:7px;border-radius:2px;background:var(--arc-green-dark);
+  }
+  #endor-arc .arc-sources b{color:var(--arc-white);font-weight:600;}
+
+  /* ── CTA band ── */
+  #endor-arc .arc-cta{
+    margin-top:48px;border:1px solid var(--arc-green-dark);border-radius:18px;
+    background:linear-gradient(135deg,rgba(0,240,120,.09),rgba(63,225,243,.05) 55%,rgba(159,105,247,.06));
+    padding:34px;display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap;
+  }
+  @media(max-width:720px){#endor-arc .arc-cta{padding:24px 20px;}}
+  #endor-arc .arc-cta-eyebrow{
+    font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--arc-green);margin-bottom:10px;
+  }
+  #endor-arc .arc-cta h3{font-size:23px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px;text-wrap:balance;}
+  #endor-arc .arc-cta p{font-size:15px;color:var(--arc-grey-2);max-width:52ch;line-height:1.6;}
+  #endor-arc .arc-cta-actions{display:flex;gap:14px;flex-wrap:wrap;}
+  #endor-arc .arc-btn{
+    background:var(--arc-green);color:var(--arc-black);font-weight:600;font-size:15px;text-decoration:none;
+    padding:13px 24px;border-radius:10px;box-shadow:0 0 22px rgba(0,240,120,.35);
+    display:inline-flex;align-items:center;gap:9px;white-space:nowrap;
+  }
+  #endor-arc .arc-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+  #endor-arc .arc-btn.arc-ghost{background:transparent;color:var(--arc-green);border:1px solid var(--arc-green-dark);box-shadow:none;}
+  #endor-arc .arc-btn:focus-visible{outline:2px solid var(--arc-white);outline-offset:2px;}
+
+  #endor-arc .arc-foot{
+    margin-top:26px;font-size:13px;color:var(--arc-grey-3);line-height:1.6;max-width:74ch;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #endor-arc *{transition:none!important;animation:none!important;}
+  }
+</style>
+
+<div id="endor-arc">
+  <div class="arc-stage">
+
+    <div class="arc-top">
+      <svg viewBox="0 0 190 20" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Endor Labs"><g clip-path="url(#arclg)"><path d="M112.759 0.0289154H110.498V19.3884H125.42V17.3274H112.759V0.0289154Z" fill="white"/><path d="M138.509 0.0289154L128.477 19.3884H130.908L133.788 13.822H145.544L148.424 19.3884H150.965L140.909 0.0289154H138.509ZM134.72 11.9289L139.581 2.46333H139.693L144.582 11.9289H134.717H134.72Z" fill="white"/><path d="M167.65 9.55236V9.43947C169.911 8.70712 170.817 7.14979 170.817 5.05984C170.817 3.47936 170.307 2.1507 168.95 1.24467C167.141 0.115755 164.741 0.0289154 160.923 0.0289154H154.109V19.3884H161.878C165.806 19.3884 168.435 19.3016 170.215 17.8369C171.234 17.0177 171.853 15.8598 171.853 14.1896C171.856 11.3036 170.163 10.0329 167.647 9.55236H167.65ZM156.37 1.92492H161.713C165.812 1.92492 168.55 2.2057 168.55 5.31457C168.55 8.14266 166.403 8.82001 161.713 8.82001H156.37V1.92203V1.92492ZM162.758 17.4953H156.373V10.6813H162.758C166.686 10.6813 169.566 10.9331 169.566 14.0709C169.566 16.9309 167.534 17.4924 162.758 17.4924V17.4953Z" fill="white"/><path d="M183.664 8.64636C182.005 8.37427 180.592 8.12822 179.258 7.72007C177.651 7.23087 177.191 6.35958 177.191 4.97303C177.191 3.75149 177.599 2.7673 179.258 2.25494C180.236 1.98285 181.487 1.87574 182.847 1.87574C184.558 1.87574 186.654 2.0089 188.831 2.22889V0.272098C186.683 0.109997 184.752 0 182.873 0C181.296 0 179.284 0.133155 177.816 0.816295C175.695 1.76864 175.124 3.53439 175.124 5.22198C175.124 8.56821 177.217 9.6566 181.215 10.3368C183.035 10.6639 184.26 10.855 185.782 11.2892C187.412 11.8073 187.907 12.7307 187.907 14.1462C187.907 15.4257 187.499 16.5372 185.811 17.0264C184.775 17.3246 183.472 17.4346 181.866 17.4346C179.964 17.4346 177.596 17.3014 175.15 17.0814V19.1222C177.599 19.2843 179.776 19.3943 181.924 19.3943C183.716 19.3943 185.704 19.2611 187.201 18.5519C189.404 17.5446 190 15.7238 190 13.9841C190 10.4729 187.8 9.30345 183.664 8.64926V8.64636Z" fill="white"/><path d="M7.18446 11.9781H13.5469V7.20482H7.18446V4.8312H16.9395V0H1.48486V11.981H7.18446V11.9781Z" fill="white"/><path d="M16.9422 14.618H7.20166V19.4492H16.9422V14.618Z" fill="white"/><path d="M26.3821 9.51476C26.3821 9.51476 26.8019 10.3861 27.2534 10.9853L33.4364 19.4493H38.3892V0.00289466H32.6867V10.0879C32.6867 10.0879 32.267 9.21661 31.8154 8.61742L25.6295 0H20.6768V19.4493H26.3792V9.51476H26.3821Z" fill="white"/><path d="M72.9543 0C66.9305 0 62.9041 4.31594 62.9041 9.67397C62.9041 15.032 66.9276 19.4058 72.9543 19.4058C78.981 19.4058 83.0336 15.0899 83.0336 9.67397C83.0336 4.25805 78.9781 0 72.9543 0ZM72.9543 14.427C70.4331 14.427 68.6384 12.4557 68.6384 9.67686C68.6384 6.89799 70.5807 4.98461 72.9543 4.98461C75.5045 4.98461 77.2992 6.95588 77.2992 9.67686C77.2992 12.4586 75.5016 14.427 72.9543 14.427Z" fill="white"/><path d="M99.6749 13.6571C101.716 12.2474 102.735 9.93452 102.735 7.68537C102.735 3.45337 99.6749 0.00292969 93.7004 0.00292969H85.1177V4.85149H90.8231V4.83413H93.7959C95.5066 4.83413 96.7079 6.0962 96.7079 7.68537C96.7079 9.27454 95.5356 10.5366 93.7669 10.5366H93.188V10.554H85.1235V19.4493H90.826V15.3649H93.1648C93.6454 15.3649 93.9754 15.336 94.5745 15.2752L96.7948 19.4464H103.308L99.6749 13.6571Z" fill="white"/><path d="M5.71696 17.0351C5.71696 15.4546 4.43752 14.1752 2.85703 14.1752C1.27655 14.1752 0 15.4546 0 17.0351C0 18.6156 1.27944 19.895 2.85703 19.895H2.85993C4.44042 19.895 5.71986 18.6127 5.71986 17.0351H5.71696Z" fill="#26D07C"/><path d="M50.2251 0H42.1201V12.0158H47.8226V4.8312H50.0138C52.9259 4.8312 54.7842 6.93272 54.7842 9.72318C54.7842 12.5136 52.923 14.6152 50.0138 14.6152H42.1172V19.4464H50.2222C56.7352 19.4464 60.8167 15.0349 60.8167 9.72028C60.8167 4.40568 56.7381 0 50.2251 0Z" fill="white"/></g><defs><clipPath id="arclg"><rect width="190" height="19.895" fill="white"/></clipPath></defs></svg>
+      <span class="arc-eyebrow"><span class="arc-dot"></span> Token ROI Calculator</span>
+    </div>
+
+    <h1>What does agentic remediation <span class="arc-grad">actually cost</span> per year?</h1>
+    <p class="arc-lead">Your scanner finds the vulnerability. An AI agent can fix it — but on its own, the agent burns most of its tokens rediscovering what your tools already know: is it reachable, is it exploitable, which upgrade is safe. Endor Labs hands the agent that security context up front, so it moves straight to the fix. In our benchmark, the same remediation used <b>up to 91.7% fewer tokens</b>. Put in your numbers and see what that's worth.</p>
+
+    <!-- ── 01 · INPUTS ─────────────────────────────────────────────── -->
+    <div class="arc-section">
+      <div class="arc-sec-head">
+        <span class="arc-sec-num">01</span>
+        <h2>Your organization</h2>
+        <span class="arc-sec-note">Two inputs. Defaults are conservative.</span>
+      </div>
+
+      <div class="arc-panel">
+        <div class="arc-inputs">
+
+          <div class="arc-field">
+            <label for="arc-devs">Developers <span class="arc-hint">with an agent seat</span></label>
+            <div class="arc-row">
+              <input type="range" id="arc-devs" min="10" max="2000" step="10" value="150">
+              <input type="number" id="arc-devs-n" min="1" max="20000" value="150" aria-label="Developers (exact number)">
+            </div>
+          </div>
+
+          <div class="arc-field">
+            <label for="arc-prs">Fixes per developer / month <span class="arc-hint">shipped as PRs · industry avg ≈ 2 per week</span></label>
+            <div class="arc-row">
+              <input type="range" id="arc-prs" min="1" max="30" step="1" value="8">
+              <input type="number" id="arc-prs-n" min="1" max="200" value="8" aria-label="Fixes per developer per month (exact number)">
+            </div>
+          </div>
+
+        </div>
+
+        <details>
+          <summary><svg class="arc-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg> Model &amp; assumptions</summary>
+          <div class="arc-details-body">
+            <div class="arc-adv-grid">
+
+              <div class="arc-field arc-models">
+                <label id="arc-model-label">Remediation model <span class="arc-hint">list price per fix, from public bands</span></label>
+                <div class="arc-model-grid" role="radiogroup" aria-labelledby="arc-model-label">
+                  <span class="arc-model">
+                    <input type="radio" name="arc-model" id="arc-m-gpt55" value="gpt55">
+                    <label class="arc-model-card" for="arc-m-gpt55">
+                      <span class="arc-model-name">GPT-5.5</span>
+                      <span class="arc-model-price" data-model-price="gpt55">$24 / fix · 1.2× reference</span>
+                    </label>
+                  </span>
+                  <span class="arc-model">
+                    <input type="radio" name="arc-model" id="arc-m-opus48" value="opus48" checked>
+                    <label class="arc-model-card" for="arc-m-opus48">
+                      <span class="arc-model-name">Claude Opus 4.8 <span class="arc-ref-tag">Reference</span></span>
+                      <span class="arc-model-price" data-model-price="opus48">$20 / fix · 1.0× reference</span>
+                    </label>
+                  </span>
+                  <span class="arc-model">
+                    <input type="radio" name="arc-model" id="arc-m-fable5" value="fable5">
+                    <label class="arc-model-card" for="arc-m-fable5">
+                      <span class="arc-model-name">Claude Fable 5</span>
+                      <span class="arc-model-price" data-model-price="fable5">$40 / fix · 2.0× reference</span>
+                    </label>
+                  </span>
+                </div>
+              </div>
+
+              <div class="arc-field">
+                <label for="arc-seat-n">Seat license ($ / seat / month) <span class="arc-hint">public trackers: $100–150</span></label>
+                <div class="arc-row">
+                  <input type="range" id="arc-seat" min="50" max="200" step="5" value="100">
+                  <input type="number" id="arc-seat-n" min="0" max="1000" value="100" aria-label="Seat license dollars per seat per month (exact number)">
+                </div>
+              </div>
+
+              <div class="arc-field">
+                <label for="arc-ref-n">Reference $ / fix (Opus 4.8) <span class="arc-hint">public band: $15–25 per PR</span></label>
+                <div class="arc-row">
+                  <input type="range" id="arc-ref" min="5" max="50" step="1" value="20">
+                  <input type="number" id="arc-ref-n" min="1" max="500" value="20" aria-label="Reference dollars per fix (exact number)">
+                </div>
+              </div>
+
+              <div class="arc-field" style="grid-column:1 / -1;">
+                <label for="arc-red">Token reduction from Endor Labs context <span class="arc-hint">benchmark: up to 91.7% · default 80% is conservative</span></label>
+                <div class="arc-row">
+                  <input type="range" id="arc-red" min="0" max="91.7" step="0.1" value="80">
+                  <input type="number" id="arc-red-n" min="0" max="91.7" step="0.1" value="80" aria-label="Token reduction percent (exact number)">
+                </div>
+              </div>
+
+            </div>
+            <button type="button" class="arc-reset" id="arc-reset">Reset to defaults</button>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ── 02 · RESULTS ────────────────────────────────────────────── -->
+    <div class="arc-section">
+      <div class="arc-sec-head">
+        <span class="arc-sec-num">02</span>
+        <h2>Your annual remediation bill, with and without Endor Labs</h2>
+      </div>
+
+      <div class="arc-panel">
+        <div class="arc-hero" aria-live="polite">
+          <div>
+            <div class="arc-hero-label">Estimated annual savings</div>
+            <div class="arc-hero-num" id="arc-savings">$230,400</div>
+          </div>
+          <span class="arc-hero-chip"><svg viewBox="0 0 24 24"><path d="M17 14l-5 5-5-5M12 19V5"/></svg> <span id="arc-pct">49.2%</span>&nbsp;lower total cost</span>
+        </div>
+
+        <div class="arc-chart" role="img" aria-label="Stacked bar comparison of annual remediation cost with and without Endor Labs" id="arc-chart-desc-holder">
+          <div class="arc-bar-row">
+            <div class="arc-bar-label"><span>Without Endor Labs</span><span class="arc-bar-total" id="arc-total-no">$468,000</span></div>
+            <div class="arc-track">
+              <div class="arc-seg arc-seg--seat" id="arc-b1-seat"><span class="arc-seg-val"></span></div>
+              <div class="arc-seg arc-seg--tokens" id="arc-b1-tok"><span class="arc-seg-val"></span></div>
+            </div>
+          </div>
+          <div class="arc-bar-row">
+            <div class="arc-bar-label"><span>With Endor Labs</span><span class="arc-bar-total" id="arc-total-yes">$237,600</span></div>
+            <div class="arc-track">
+              <div class="arc-seg arc-seg--seat" id="arc-b2-seat"><span class="arc-seg-val"></span></div>
+              <div class="arc-seg arc-seg--tokens" id="arc-b2-tok"><span class="arc-seg-val"></span></div>
+              <div class="arc-seg arc-seg--avoided" id="arc-b2-avoid"><span class="arc-seg-val"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arc-legend">
+          <span><span class="arc-swatch" style="background:var(--arc-seat)"></span> Seat licenses (fixed)</span>
+          <span><span class="arc-swatch" style="background:var(--arc-tokens)"></span> Agent token bill</span>
+          <span><span class="arc-swatch arc-swatch--avoided"></span> Avoided with Endor Labs context</span>
+        </div>
+
+        <div class="arc-tiles">
+          <div class="arc-tile">
+            <div class="arc-tile-label">Total without Endor Labs</div>
+            <div class="arc-tile-num" id="arc-tile-no">$468,000</div>
+            <div class="arc-tile-sub" id="arc-tile-no-sub">14,400 fixes / year</div>
+          </div>
+          <div class="arc-tile">
+            <div class="arc-tile-label">Total with Endor Labs</div>
+            <div class="arc-tile-num" id="arc-tile-yes">$237,600</div>
+            <div class="arc-tile-sub" id="arc-tile-yes-sub">same seats, 80% fewer agent tokens</div>
+          </div>
+          <div class="arc-tile arc-tile--save">
+            <div class="arc-tile-label">Token cost per fix</div>
+            <div class="arc-tile-num" id="arc-tile-ppr">$20 → $4.00</div>
+            <div class="arc-tile-sub">list price → with security context</div>
+          </div>
+        </div>
+
+        <details>
+          <summary><svg class="arc-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg> Compare all three models at your volume</summary>
+          <div class="arc-details-body arc-table-wrap">
+            <table>
+              <thead>
+                <tr><th scope="col">Model</th><th scope="col">$ / fix</th><th scope="col">Total without</th><th scope="col">Total with</th><th scope="col">Annual savings</th></tr>
+              </thead>
+              <tbody id="arc-compare"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ── 03 · METHODOLOGY & SOURCES ──────────────────────────────── -->
+    <div class="arc-section">
+      <div class="arc-sec-head">
+        <span class="arc-sec-num">03</span>
+        <h2>Under the hood</h2>
+        <span class="arc-sec-note">Every number above, step by step. No hidden math.</span>
+      </div>
+
+      <details>
+        <summary><svg class="arc-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg> How it's calculated</summary>
+        <div class="arc-details-body">
+          <div class="arc-steps">
+            <div class="arc-step">
+              <span class="arc-step-badge">A</span>
+              <div>
+                <h4>Seat floor — the fixed cost of agent seats</h4>
+                <p><span class="arc-formula">developers × seat license × 12</span><br>
+                <span id="arc-calc-a">150 × $100 × 12 = <b>$180,000</b> / year</span>. This is fixed — it's the same with or without Endor Labs.</p>
+              </div>
+            </div>
+            <div class="arc-step">
+              <span class="arc-step-badge">B</span>
+              <div>
+                <h4>Token bill — what the fixes themselves cost at list price</h4>
+                <p><span class="arc-formula">developers × fixes/dev/month × 12 × $/fix</span><br>
+                <span id="arc-calc-b">150 × 8 × 12 = 14,400 fixes × $20 = <b>$288,000</b> / year</span>. The $/fix is the reference price × the model's multiplier.</p>
+              </div>
+            </div>
+            <div class="arc-step">
+              <span class="arc-step-badge">C</span>
+              <div>
+                <h4>Apply the context lever — same fixes, fewer tokens</h4>
+                <p><span class="arc-formula">token bill × (1 − reduction) + seat floor</span><br>
+                <span id="arc-calc-c">$288,000 × (1 − 80%) = $57,600 + $180,000 = <b>$237,600</b> total, saving <b>$230,400</b></span>. Savings = total without − total with.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary><svg class="arc-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg> Sources &amp; assumptions</summary>
+        <div class="arc-details-body">
+          <ul class="arc-sources">
+            <li><b>Seat license, $100/seat/month:</b> Team Premium annual pricing from public price trackers, April 2026. Public range is $100–150; the default uses the low end.</li>
+            <li><b>Reference $20/fix:</b> each agentic remediation ships as a PR, so we anchor on Anthropic's published Code Review band of $15–25 per PR for Claude Opus 4.8, June 2026. The default is the midpoint.</li>
+            <li><b>Model multipliers:</b> GPT-5.5 ≈ 1.2× and Claude Fable 5 ≈ 2.0× the Opus 4.8 reference, derived from the same public pricing bands.</li>
+            <li><b>8 fixes per developer per month:</b> industry research puts the average at roughly 2 PRs per developer per week.</li>
+            <li><b>Token reduction, up to 91.7%:</b> Endor Labs benchmark comparing remediations where the agent receives deterministic security context (dependency graph, reachability, exploitability) against remediations where it rediscovers that context itself. The default is set at a conservative 80%.</li>
+            <li><b>Scope:</b> the estimate covers seat licenses and per-fix token spend only. It excludes engineering time, CI minutes, and orchestration infrastructure. Based on public pricing — not an Anthropic quote.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- ── CTA ─────────────────────────────────────────────────────── -->
+    <div class="arc-cta">
+      <div>
+        <div class="arc-cta-eyebrow">Endor Labs AI FinOps</div>
+        <h3>Want these numbers for your actual backlog?</h3>
+        <p>These defaults are deliberately conservative. Our in-house AI FinOps team does one thing: help customers cut the token cost of agentic remediation. They'll run this model on your real fix volume, models, and repos — and show you exactly where the tokens go.</p>
+      </div>
+      <div class="arc-cta-actions">
+        <!-- ARC-TODO (web team): wire this href -->
+        <a class="arc-btn" href="#" data-arc-cta="talk-to-finops">Talk to our AI FinOps team <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+
+    <p class="arc-foot">Estimates are based on public pricing as of mid-2026 and Endor Labs benchmark data — not an Anthropic quote. Your numbers will vary with repo size, fix complexity, and model choice; that's exactly what the deep dive is for.</p>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.getElementById("endor-arc");
+  if(!root) return;
+  var $ = function(id){ return root.querySelector("#"+id); };
+
+  /* ── model table: multipliers vs the Opus 4.8 reference (source: spreadsheet Step B) ── */
+  var MODELS = [
+    { key:"gpt55",  name:"GPT-5.5",         mult:1.2 },
+    { key:"opus48", name:"Claude Opus 4.8", mult:1.0 },
+    { key:"fable5", name:"Claude Fable 5",  mult:2.0 }
+  ];
+  var DEFAULTS = { devs:150, prs:8, seat:100, ref:20, red:80, model:"opus48" };
+
+  /* ── formatting ── */
+  var usd0 = new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+  var usdC = new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",notation:"compact",maximumFractionDigits:1});
+  var num0 = new Intl.NumberFormat("en-US");
+  function usd2(v){ v = Math.round(v * 100) / 100; return "$" + (v % 1 === 0 ? num0.format(v) : v.toFixed(2)); }
+  function pctStr(x){ var v = Math.round(x * 1000) / 10; return (v % 1 ? v.toFixed(1) : v.toFixed(0)) + "%"; }
+
+  /* ── read state from the controls ── */
+  function state(){
+    var m = root.querySelector("input[name=arc-model]:checked");
+    return {
+      devs: Math.max(1, +$("arc-devs-n").value || DEFAULTS.devs),
+      prs:  Math.max(1, +$("arc-prs-n").value  || DEFAULTS.prs),
+      seat: Math.max(0, +$("arc-seat-n").value || 0),
+      ref:  Math.max(1, +$("arc-ref-n").value  || DEFAULTS.ref),
+      red:  Math.min(91.7, Math.max(0, +$("arc-red-n").value || 0)) / 100,
+      model: m ? m.value : DEFAULTS.model
+    };
+  }
+
+  /* ── the model itself — Steps A, B, C from the spreadsheet ── */
+  function compute(s, mult){
+    var seatFloor = s.devs * s.seat * 12;               /* A: devs × license × 12          */
+    var perPR     = s.ref * mult;                        /* B: reference $/PR × multiplier  */
+    var reviews   = s.devs * s.prs * 12;                 /* B: devs × PRs/dev/mo × 12       */
+    var tokenBill = reviews * perPR;                     /* B: reviews × $/PR               */
+    var tokenWith = tokenBill * (1 - s.red);             /* C: apply the context lever      */
+    var totalNo   = seatFloor + tokenBill;
+    var totalYes  = seatFloor + tokenWith;
+    return {
+      seatFloor:seatFloor, perPR:perPR, reviews:reviews, tokenBill:tokenBill,
+      tokenWith:tokenWith, totalNo:totalNo, totalYes:totalYes,
+      savings: totalNo - totalYes,
+      pct: totalNo > 0 ? (totalNo - totalYes) / totalNo : 0
+    };
+  }
+
+  /* ── chart segment helper: width, inline value label, hover tooltip ── */
+  function seg(id, value, total, tipLabel){
+    var el = $(id), pct = total > 0 ? (value / total) * 100 : 0;
+    el.style.width = pct + "%";
+    el.style.display = pct < 0.5 ? "none" : "flex";
+    el.setAttribute("data-tip", tipLabel + ": " + usd0.format(Math.round(value)));
+    el.querySelector(".arc-seg-val").textContent = pct >= 11 ? usdC.format(value) : "";
+  }
+
+  function render(){
+    var s = state();
+    var mult = MODELS.filter(function(m){ return m.key === s.model; })[0].mult;
+    var r = compute(s, mult);
+
+    /* hero + tiles */
+    $("arc-savings").textContent = usd0.format(Math.round(r.savings));
+    $("arc-pct").textContent = pctStr(r.pct);
+    $("arc-total-no").textContent  = usd0.format(Math.round(r.totalNo));
+    $("arc-total-yes").textContent = usd0.format(Math.round(r.totalYes));
+    $("arc-tile-no").textContent   = usd0.format(Math.round(r.totalNo));
+    $("arc-tile-yes").textContent  = usd0.format(Math.round(r.totalYes));
+    $("arc-tile-no-sub").textContent  = num0.format(r.reviews) + " fixes / year";
+    $("arc-tile-yes-sub").textContent = "same seats, " + pctStr(s.red) + " fewer agent tokens";
+    $("arc-tile-ppr").textContent  = usd2(r.perPR) + " → " + usd2(r.perPR * (1 - s.red));
+
+    /* bars — both share one scale where full width = total without Endor */
+    seg("arc-b1-seat",  r.seatFloor, r.totalNo, "Seat licenses");
+    seg("arc-b1-tok",   r.tokenBill, r.totalNo, "Agent token bill (list)");
+    seg("arc-b2-seat",  r.seatFloor, r.totalNo, "Seat licenses");
+    seg("arc-b2-tok",   r.tokenWith, r.totalNo, "Agent token bill with Endor Labs");
+    seg("arc-b2-avoid", r.savings,   r.totalNo, "Avoided");
+    var avoidEl = $("arc-b2-avoid");
+    avoidEl.querySelector(".arc-seg-val").textContent =
+      (r.savings / Math.max(r.totalNo,1)) >= 0.11 ? "−" + usdC.format(r.savings) + " avoided" : "";
+    /* if the avoided segment is hidden (0% reduction), round off the token segment instead */
+    $("arc-b2-tok").style.borderRadius = avoidEl.style.display === "none" ? "0 4px 4px 0" : "0";
+
+    /* model price captions on the cards */
+    MODELS.forEach(function(m){
+      var el = root.querySelector('[data-model-price="' + m.key + '"]');
+      if(el) el.textContent = usd2(s.ref * m.mult) + " / fix · " + m.mult.toFixed(1) + "× reference";
+    });
+
+    /* compare table (same volume for all models — apples to apples) */
+    $("arc-compare").innerHTML = MODELS.map(function(m){
+      var c = compute(s, m.mult);
+      return "<tr" + (m.key === s.model ? ' class="arc-active"' : "") + ">"
+        + "<td>" + m.name + "</td>"
+        + "<td>" + usd2(c.perPR) + "</td>"
+        + "<td>" + usd0.format(Math.round(c.totalNo)) + "</td>"
+        + "<td>" + usd0.format(Math.round(c.totalYes)) + "</td>"
+        + '<td class="arc-save-col">' + usd0.format(Math.round(c.savings)) + " (" + pctStr(c.pct) + ")</td></tr>";
+    }).join("");
+
+    /* live methodology walk-through */
+    var redPct = pctStr(s.red);
+    $("arc-calc-a").innerHTML = num0.format(s.devs) + " × " + usd0.format(s.seat) + " × 12 = <b>" + usd0.format(r.seatFloor) + "</b> / year";
+    $("arc-calc-b").innerHTML = num0.format(s.devs) + " × " + s.prs + " × 12 = " + num0.format(r.reviews)
+      + " fixes × " + usd2(r.perPR) + " = <b>" + usd0.format(Math.round(r.tokenBill)) + "</b> / year";
+    $("arc-calc-c").innerHTML = usd0.format(Math.round(r.tokenBill)) + " × (1 − " + redPct + ") = "
+      + usd0.format(Math.round(r.tokenWith)) + " + " + usd0.format(r.seatFloor)
+      + " = <b>" + usd0.format(Math.round(r.totalYes)) + "</b> total, saving <b>" + usd0.format(Math.round(r.savings)) + "</b>";
+  }
+
+  /* ── slider fill + range↔number sync ── */
+  function paintRange(el){
+    var pct = ((+el.value - +el.min) / (+el.max - +el.min)) * 100;
+    el.style.background = "linear-gradient(to right, var(--arc-green-logo) " + pct + "%, var(--arc-border) " + pct + "%)";
+  }
+  function link(rangeId, numId){
+    var r = $(rangeId), n = $(numId);
+    r.addEventListener("input", function(){ n.value = r.value; paintRange(r); render(); });
+    n.addEventListener("input", function(){
+      if(n.value === "") return;
+      r.value = Math.min(+r.max, Math.max(+r.min, +n.value));
+      paintRange(r); render();
+    });
+    n.addEventListener("blur", function(){ if(n.value === "" || +n.value < +n.min){ n.value = r.value; render(); } });
+    paintRange(r);
+  }
+  link("arc-devs","arc-devs-n"); link("arc-prs","arc-prs-n");
+  link("arc-seat","arc-seat-n"); link("arc-ref","arc-ref-n"); link("arc-red","arc-red-n");
+
+  root.querySelectorAll("input[name=arc-model]").forEach(function(el){
+    el.addEventListener("change", render);
+  });
+
+  $("arc-reset").addEventListener("click", function(){
+    $("arc-devs").value = $("arc-devs-n").value = DEFAULTS.devs;
+    $("arc-prs").value  = $("arc-prs-n").value  = DEFAULTS.prs;
+    $("arc-seat").value = $("arc-seat-n").value = DEFAULTS.seat;
+    $("arc-ref").value  = $("arc-ref-n").value  = DEFAULTS.ref;
+    $("arc-red").value  = $("arc-red-n").value  = DEFAULTS.red;
+    $("arc-m-opus48").checked = true;
+    ["arc-devs","arc-prs","arc-seat","arc-ref","arc-red"].forEach(function(id){ paintRange($(id)); });
+    render();
+  });
+
+  render();
+})();
+</script>
+<!-- ARC-EMBED-END -->
+
+</body>
+</html>
