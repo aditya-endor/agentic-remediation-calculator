@@ -1,0 +1,408 @@
+{
+  "meta": {
+    "deck_type": "pitch",
+    "title": "AppSec Consolidation - Unity",
+    "account": "Unity",
+    "date": "September 2026",
+    "confidential": true,
+    "user_supplied": ["472K", "250K", "722K", "950K", "1.05M", "228K", "328K", "7,500", "20,000", "3,000", "2,000", "1,000", "17", "17,000", "10", "20", "30", "89.5", "93.3", "6", "8", "9", "2026", "2027", "2025", "25"]
+  },
+  "slides": [
+    {
+      "type": "title",
+      "title": "Speed or oversight",
+      "strike": "or",
+      "replace": "AND",
+      "subtitle": "One AppSec platform for Unity",
+      "tagline": "The 2027 consolidation decision",
+      "notes": "Open on the tension the whole deal turns on: Andie needs tooling engineers never feel, Chris and the new CISO need oversight they can defend. GitHub Advanced Security offers the first without the second. Cycode offers neither. The deck argues Unity can have both."
+    },
+    {
+      "type": "bullets",
+      "numbered": true,
+      "eyebrow": "EXECUTIVE SUMMARY",
+      "headline": "The recommendation",
+      "items": [
+        {"t": "Consolidate on Endor Labs: SCA, AI SAST, secrets", "sub": "2,000 Code Pro seats plus 1,000 more SCA seats"},
+        {"t": "One platform replaces five line items", "sub": "Cycode, planned GitHub buy, Black Duck, Coverity, internal filter"},
+        {"t": "92% average false positive reduction for engineers", "sub": "The noise that broke Cycode adoption"},
+        {"t": "Under $10 per developer per month over the split stack"}
+      ],
+      "notes": "The ask: $950K to $1.05M per year on a 3 year term, versus about $722K for renewing Cycode ($472K) plus adding GitHub Secret Protection ($250K). This deck walks Unity's own five success metrics, scores both options, and prices the gap. If the room reads two slides, it is this one and the scorecard."
+    },
+    {
+      "type": "bullets",
+      "terms": true,
+      "eyebrow": "TODAY",
+      "headline": "Five tools, one problem",
+      "items": [
+        {"term": "Cycode", "desc": "$472K a year, all engineers. Search too slow to use"},
+        {"term": "GitHub Secret Protection", "desc": "Proposed at $250K a year, secrets only"},
+        {"term": "Endor Labs", "desc": "Live on the Engine, 1,000 developers, adoption rated green"},
+        {"term": "Black Duck + Coverity", "desc": "Legacy scanners the Engine team still maintains"},
+        {"term": "Homegrown filter", "desc": "A re-scoring layer Unity built to survive the noise"}
+      ],
+      "notes": "Every line except Endor Labs exists because another line does not work. Cycode's search latency and finding floods pushed Unity to build its own CVSS re-scoring layer into Jira. The Engine team still maintains Black Duck for SBOM and Coverity for SAST. The question is not which scanner, it is how many layers of compensation Unity keeps funding."
+    },
+    {
+      "type": "pillars",
+      "eyebrow": "WHY NOW",
+      "headline": "Three clocks are running",
+      "cols": [
+        {
+          "eyebrow": "THE INCIDENT",
+          "h3": "The bar is set",
+          "bullets": ["One malicious package started it", "7,500 repos taken, secrets inside", "The scanner missed them"]
+        },
+        {
+          "eyebrow": "THE RENEWAL",
+          "h3": "The window is open",
+          "bullets": ["Cycode renews in December", "Budgets close in November", "Finance hears the ask September 8"]
+        },
+        {
+          "eyebrow": "THE MANDATE",
+          "h3": "The rules changed",
+          "bullets": ["Security now reports into engineering", "Tools engineers avoid are failed controls", "AI is writing more of the code"]
+        }
+      ],
+      "notes": "For the new CISO this slide is the history lesson: incident, distrust of the incumbent, engineering led rebuild, this decision. The compromise began with a malicious package and ended with roughly 7,500 exfiltrated repos whose embedded secrets the incumbent never flagged. Deciding late means renewing Cycode by default. Incident details are Unity confidential."
+    },
+    {
+      "type": "comparison",
+      "eyebrow": "THE SCORECARD",
+      "headline": "Unity already wrote the test",
+      "competitor": "Split stack",
+      "rows": [
+        {"capability": "Engineer experience", "comp": "partial", "comp_note": "Cycode disrupts. GitHub, secrets only.", "endor": "yes", "endor_note": "In the PR. 92% average false positive reduction."},
+        {"capability": "Security oversight", "comp": "no", "comp_note": "Push protection skips AppSec review.", "endor": "yes", "endor_note": "One policy engine, exceptions, audit."},
+        {"capability": "Risk thresholds", "comp": "no", "comp_note": "Unity built its own filter.", "endor": "yes", "endor_note": "Gates only reachable, confident findings."},
+        {"capability": "Covers the Engine", "comp": "no", "comp_note": "No manifest free C, C++, C#.", "endor": "yes", "endor_note": "Running on the Engine today."},
+        {"capability": "Blocks secrets", "comp": "partial", "comp_note": "GitHub blocks at push, strong there.", "endor": "yes", "endor_note": "Blocks pre commit, checks liveness."}
+      ],
+      "notes": "These five metrics are Unity's own, from the September 1 review, in Unity's priority order. Split stack means renewing Cycode and adding GitHub Secret Protection. Two honest credits: GitHub push protection is real, and it comes back on metrics 2 and 5. The next six slides walk the metrics one at a time. Net: Endor Labs 5 of 5, the split stack 1.5 of 5."
+    },
+    {
+      "type": "split",
+      "eyebrow": "METRIC 1 OF 5",
+      "headline": "Engineer experience is the number one metric",
+      "left": {
+        "tone": "red",
+        "eyebrow": "CYCODE TODAY",
+        "bullets": [
+          {"t": "Disruptive and annoying", "sub": "Unity engineers' own words"},
+          {"t": "Search never gets used", "sub": "Too slow on real repos"},
+          {"t": "Findings flood the queue", "sub": "Noise re-routed into Jira"}
+        ]
+      },
+      "right": {
+        "eyebrow": "ENDOR LABS ON THE ENGINE",
+        "stats": [
+          {"stat": "92%", "label": "average false positive reduction"},
+          {"stat": "10 to 30", "label": "minutes per Engine scan, PR comments live"}
+        ]
+      },
+      "takeaway": "The number one metric is already proven at Unity",
+      "notes": "GitHub is honestly good on this metric for the secrets slice; that credit is real and it is handled on metrics 2 and 5. The Engine rollout ran on the philosophy Unity asked for, noisy findings are worse than under reporting: PR comments first, blocking only when in PR triage ships (CR-391). 92% is the platform average false positive reduction; customers report 91 to 99% of findings eliminated as noise."
+    },
+    {
+      "type": "split",
+      "eyebrow": "METRIC 2 OF 5",
+      "headline": "Security stays in the loop",
+      "left": {
+        "band": "dark",
+        "eyebrow": "GITHUB SECRET PROTECTION",
+        "title": "Invisible to everyone",
+        "bullets": [
+          "Smooth for engineers, strong at push",
+          "No cross tool policy or thresholds",
+          "AppSec cannot see how findings are handled"
+        ]
+      },
+      "right": {
+        "band": "green",
+        "eyebrow": "ENDOR LABS",
+        "title": "Invisible to engineers only",
+        "bullets": [
+          "Findings stay inside the PR",
+          "One policy engine, central exceptions",
+          "Full audit trail for security"
+        ]
+      },
+      "takeaway": "Engineers keep the speed, security keeps the map",
+      "notes": "This is the metric Chris insisted on and the one GitHub Advanced Security structurally cannot meet: no cross tool policy, no risk thresholds, no centralized exception handling. After the incident, we do not know how findings were handled is not an answer a board accepts. Endor Labs keeps engineers in the PR and gives security the policy engine, the exceptions workflow, and the audit trail."
+    },
+    {
+      "type": "split",
+      "eyebrow": "METRIC 3 OF 5",
+      "headline": "Risk based control, built in",
+      "left": {
+        "tone": "red",
+        "eyebrow": "TODAY",
+        "bullets": [
+          {"t": "Every finding looks urgent", "sub": "Severity scores without context"},
+          {"t": "Unity built its own filter", "sub": "Re-scoring findings into Jira"},
+          {"t": "Someone maintains it forever", "sub": "Engineering time, off the books"}
+        ]
+      },
+      "right": {
+        "eyebrow": "WITH ENDOR LABS",
+        "bullets": [
+          {"t": "Fix these, see the rest", "sub": "Gates only reachable, confident findings"},
+          {"t": "Evidence, not guesswork", "sub": "A call path proves each flaw"},
+          {"t": "The homegrown filter retires", "sub": "Thresholds are native, per team"}
+        ]
+      },
+      "notes": "Function level reachability separates a CVE exists somewhere from the vulnerable function is actually callable in Unity's code, with the call path as evidence (19,118 CVEs annotated at function level per the September 2 brief; verify that figure before external use). Ask the room what the internal filter costs to maintain and who owns it when its author leaves. That cost never appears on a renewal quote."
+    },
+    {
+      "type": "pillars",
+      "eyebrow": "METRIC 4 OF 5",
+      "headline": "One platform, one policy engine, one number",
+      "cols": [
+        {
+          "h3": "Open source",
+          "bullets": ["C, C++, and C# with no manifests", "Replaces Cycode SCA and Black Duck"]
+        },
+        {
+          "h3": "Code",
+          "bullets": ["AI SAST for 2,000 developers", "Replaces Cycode SAST and Coverity"]
+        },
+        {
+          "h3": "Secrets",
+          "bullets": ["Find, validate, and block", "Replaces the GitHub buy"]
+        },
+        {
+          "h3": "Later, if wanted",
+          "bullets": ["Package Firewall and agent governance", "Roadmap, not in this quote"]
+        }
+      ],
+      "strip": "Already required for the Engine: a second stack is duplicate spend",
+      "notes": "The consolidation logic is asymmetric: Cycode can never cover the Engine because it cannot scan C, C++, or C# without manifest files, but Endor Labs covers everything Cycode does. Package Firewall (blocks malicious packages at install time, the incident's entry vector, works with Artifactory or standalone) and coding agent governance are the growth path on the same platform, deliberately not in this quote."
+    },
+    {
+      "type": "split",
+      "eyebrow": "METRIC 5 OF 5 · SECRETS",
+      "headline": "Which secrets in 20,000 repos are live right now?",
+      "left": {
+        "tone": "red",
+        "eyebrow": "THE INCIDENT STANDARD",
+        "stats": [
+          {"stat": "7,500", "label": "repos exfiltrated, embedded secrets undetected"},
+          {"stat": "$1.2M", "label": "average financial damage per leaked secret"}
+        ]
+      },
+      "right": {
+        "eyebrow": "ENDOR LABS SECRETS",
+        "bullets": [
+          "Scans full history, every branch and commit",
+          "Marks each secret live or dead",
+          "One finding per secret, not fifty",
+          "Custom rules for Unity token formats"
+        ]
+      },
+      "takeaway": "Built for 17 acquisitions worth of history",
+      "notes": "The incident question is not how many pattern matches exist, it is which credentials are live right now. Validation calls the underlying service and marks each finding Valid, Invalid, or Unvalidated, so triage starts with live credentials. Deduplication collapses the same secret in fifty files into one finding. In the incident the incumbent missed the secrets and open source TruffleHog outperformed it, per the September 2 brief. Unity confidential: do not reuse outside this account."
+    },
+    {
+      "type": "split",
+      "eyebrow": "METRIC 5 OF 5 · SECRETS",
+      "headline": "Hard blocking, without going blind",
+      "left": {
+        "band": "dark",
+        "eyebrow": "GITHUB PUSH PROTECTION",
+        "title": "Guards the push",
+        "bullets": [
+          "Blocks at push, strong at that moment",
+          "No check for whether a secret is live",
+          "Policy sits outside AppSec"
+        ]
+      },
+      "right": {
+        "band": "green",
+        "eyebrow": "ENDOR LABS",
+        "title": "Guards before, at, and after",
+        "bullets": [
+          "Blocks before the commit exists, agents included",
+          "Validation shows what is live",
+          "AppSec keeps policy and audit"
+        ]
+      },
+      "takeaway": "The workflow engineers love, the oversight security needs",
+      "notes": "Give push protection its due: at the push boundary it is excellent, and it is why GitHub is in this conversation. The gap is before and after that boundary: a pre commit hook stops the secret before it enters history anywhere, the same hooks cover AI coding agents, and validation plus full history scanning answer the incident question. Before presenting: SE validation needed (Matthew or Shruti) on hook rollout mechanics at Unity scale, MDM or endorctl distribution, GitHub Enterprise behind VPN, and agent hooks."
+    },
+    {
+      "type": "stats",
+      "cards": true,
+      "eyebrow": "PROVEN AT UNITY",
+      "headline": "Not a proposal, a production system",
+      "items": [
+        {"eyebrow": "UNITY'S OWN EVALUATION", "stat": "10 to 20%", "label": "better findings than Black Duck, per Unity"},
+        {"eyebrow": "ENGINE TEST REPO", "stat": "89.5%", "label": "dependency resolution on the Engine test repo"},
+        {"eyebrow": "REACHABILITY", "stat": "93.3%", "label": "reachability analysis on the same repo"}
+      ],
+      "takeaway": "C# support was promised for April and shipped in April",
+      "notes": "Endor Labs is the only vendor scanning C, C++, and C# without manifest files, which is why it is on the Engine at all. Scan times went from 10 hours to 2 hours to under 30 minutes; PR scans have been live since June; adoption is rated green. The evaluation numbers are Unity's own from October 2025: get champion sign off before showing them to new stakeholders."
+    },
+    {
+      "type": "stats",
+      "eyebrow": "AT SCALE",
+      "headline": "Teams at Unity's scale see it hold",
+      "items": [
+        {"stat": "97%", "label": "reduction in non actionable alerts", "attr": "Zebra Technologies"},
+        {"stat": "96.5%", "label": "noise reduction, 50,000 findings to 30 or 40", "attr": "Five9"},
+        {"stat": "70%", "label": "MTTR decrease", "attr": "Egnyte"}
+      ],
+      "notes": "All public case studies. Zebra Technologies also cut remediation effort by over 60%. Five9 supports more than 250 developers per security engineer. Egnyte reallocated roughly 40% of AppSec resources. Keep each framing exactly as published; swap in different customers only from the approved social proof set."
+    },
+    {
+      "type": "big_stat",
+      "eyebrow": "WHAT THE PREMIUM BUYS: CODE PRO",
+      "stat": "3.6x",
+      "circle": true,
+      "label": "more true positives than GitHub CodeQL, head to head",
+      "source": "Endor Labs AI SAST vs CodeQL testing, 2026: 3.6x true positives, 2.8x CWE coverage, 2.7x file coverage",
+      "notes": "Code Pro is 2,000 of the 3,000 seats, so this is most of what Unity is buying. CodeQL is a strong, respected engine and Endor Labs partners with GitHub; the data is simply the data: 3.6x more true positives, 2.8x more CWE coverage, 2.7x more file coverage. Against Cycode: their SAST is the acquired Bearer engine, strongest in Java, about 10 languages, closed rules. Endor Labs AI SAST covers 41 languages with auditable, configurable rules."
+    },
+    {
+      "type": "stats",
+      "cards": true,
+      "hero": 1,
+      "eyebrow": "AI SAST BENCHMARK, JUNE 2026",
+      "headline": "SAST that reasons about code",
+      "items": [
+        {"eyebrow": "REAL VULNERABILITIES", "stat": "192", "label": "found across 8 projects, 3x frontier models"},
+        {"eyebrow": "FOUND BY NO ONE ELSE", "stat": "63", "label": "findings no other tool caught, runner up 18"},
+        {"eyebrow": "HIGH SEVERITY", "stat": "4x", "label": "more than the strongest traditional tool"}
+      ],
+      "takeaway": "Catches broken access control and business logic flaws",
+      "notes": "Hand verified ground truth across 8 real projects in Java, Python, JavaScript, TypeScript, C#, and Go. Roughly 3x the frontier models (2.6x Claude Opus 4.7, 3.5x Codex GPT 5.5) and more than 2x Semgrep OSS. It found a zero day (CVE-2026-55407) in a Rust library, a source to sink flaw with no pattern to grep for. Why now for Unity: Copilot and Cursor are already in use and AI written code is multiplying change volume; rule based SAST cannot reason about access control or business logic. Replaces Coverity on the Engine as well."
+    },
+    {
+      "type": "split",
+      "eyebrow": "THE $250K QUESTION",
+      "headline": "The gap is smaller than it looks",
+      "left": {
+        "eyebrow": "SPLIT STACK: $722K A YEAR",
+        "bullets": [
+          {"t": "Cycode $472K, GitHub $250K", "sub": "Two vendors, one slice each"},
+          {"t": "A hidden tax on top", "sub": "Filter upkeep, legacy scanners, triage"},
+          {"t": "Cannot scan the Engine", "sub": "A second stack runs anyway"}
+        ]
+      },
+      "right": {
+        "eyebrow": "ENDOR LABS: $950K TO $1.05M",
+        "bullets": [
+          {"t": "Everything the split stack does", "sub": "One policy engine across it"},
+          {"t": "Plus AI SAST, reachability, validation", "sub": "Sold by neither vendor"},
+          {"t": "Five line items retired", "sub": "One number for finance"}
+        ]
+      },
+      "notes": "Finance framing: this is not a bigger security budget, it is the same problem bought once instead of five times. The hidden tax never shows on a quote: engineering hours on the homegrown filter, Black Duck and Coverity upkeep, triage at Cycode noise levels, and an incident class already realized once ($1.2M average damage per leaked secret). The range is the September 1 figure on a 3 year term; confirm current numbers with the account team before presenting."
+    },
+    {
+      "type": "big_stat",
+      "eyebrow": "THE WHOLE DIFFERENCE",
+      "stat": "<$10",
+      "circle": true,
+      "label": "per developer per month between the two paths",
+      "source": "Gap of $228K to $328K a year across 3,000 covered seats, from figures shared September 1",
+      "notes": "The gap between about $722K and the $950K to $1.05M range is $228K to $328K a year. Across 3,000 covered engineers that is $6 to $9 per developer per month. Judge that against the five metric scorecard and a $1.2M average cost per leaked secret. Recompute from the final quote before presenting."
+    },
+    {
+      "type": "timeline",
+      "eyebrow": "THE PATH",
+      "headline": "De-risked by design",
+      "phases": [
+        {
+          "eyebrow": "SEPTEMBER 8",
+          "title": "Finance hears the ask",
+          "bullets": ["2027 budget presented"]
+        },
+        {
+          "eyebrow": "OCTOBER TO NOVEMBER",
+          "title": "Contract",
+          "bullets": ["3 year term", "Azure Marketplace path open"]
+        },
+        {
+          "eyebrow": "DECEMBER",
+          "title": "Secrets baseline",
+          "bullets": ["Full history audit begins", "Live secrets triaged first"]
+        },
+        {
+          "eyebrow": "JANUARY 2027",
+          "title": "Cycode off",
+          "bullets": ["Code Pro rolls out in waves", "Checkpoints on the five metrics"]
+        }
+      ],
+      "notes": "The hardest codebase is already deployed and adopted, so this is an expansion of a working system, not a migration gamble. Waves are gated on developer trust exactly like the Engine rollout. The H1 2027 checkpoints reuse the scorecard: false positive rate, PR dwell time, secrets blocked pre commit, findings under central policy, tools retired. Confirm sequencing and the wave plan with Thomas (CSE) before presenting."
+    },
+    {
+      "type": "closing",
+      "text": "Five metrics. One option meets all five.",
+      "steps": [
+        "Approve the 2027 consolidation before the December renewal",
+        "Contract in October or November",
+        "Cycode off in January 2027"
+      ],
+      "notes": "End on the scorecard, then the ask: $950K to $1.05M a year, 3 year term, 2,000 Code Pro plus 1,000 SCA seats. The 3 year term is the pricing basis; the 2025 two year exception is the procurement precedent, and security prefers multi year."
+    },
+    {
+      "type": "section",
+      "number": "A",
+      "eyebrow": "APPENDIX",
+      "title": "Backup",
+      "subtitle": "Detail for the follow up questions."
+    },
+    {
+      "type": "comparison",
+      "eyebrow": "APPENDIX",
+      "headline": "Coverage where Unity lives",
+      "competitor": "Cycode",
+      "rows": [
+        {"capability": "C and C++", "comp": "no", "comp_note": "No SCA support documented.", "endor": "yes", "endor_note": "Reachability, no manifests needed."},
+        {"capability": "C#", "comp": "partial", "comp_note": "Covered where manifest files exist.", "endor": "yes", "endor_note": "Built for the Engine."},
+        {"capability": "Monorepos and Bazel", "comp": "no", "comp_note": "No documented support.", "endor": "yes", "endor_note": "Proven on the 25GB Engine."},
+        {"capability": "SAST languages", "comp": "partial", "comp_note": "About 10 languages, strongest in Java.", "endor": "yes", "endor_note": "41 languages, auditable rules."},
+        {"capability": "Whole repo PR scans", "comp": "partial", "comp_note": "Scans only the files changed.", "endor": "yes", "endor_note": "Whole repo, can block PRs."}
+      ],
+      "notes": "Rows from the February 2026 technical battlecard and June 2026 competitive brief; re verify currency if challenged. Credit where due: Cycode covers Java, JavaScript, TypeScript, Python, Go, .NET, and Ruby with reachability. The Unity problem is the Engine: C, C++, and C# without manifests, at 25GB with 17,000 branches."
+    },
+    {
+      "type": "pillars",
+      "eyebrow": "APPENDIX",
+      "headline": "Alternatives considered",
+      "cols": [
+        {
+          "eyebrow": "SCENARIO 1",
+          "h3": "Split by codebase",
+          "bullets": ["Endor Labs on Engine, GitHub elsewhere", "Two vendors, split visibility"]
+        },
+        {
+          "eyebrow": "SCENARIO 2",
+          "h3": "Split by problem",
+          "bullets": ["Endor Labs scans, GitHub secrets", "Secrets sit outside AppSec"]
+        },
+        {
+          "eyebrow": "SCENARIO 3: CHOSEN",
+          "h3": "One platform",
+          "bullets": ["Endor Labs for everything", "One policy engine, one number"]
+        }
+      ],
+      "strip": "Only scenario three meets all five metrics",
+      "notes": "Mirrors the September 2 executive brief Chris has already seen. Scenario one solves the Engine but keeps two vendors and split visibility. Scenario two consolidates scanning but leaves secrets governance outside AppSec, failing metric two. Scenario three is the recommendation this deck prices."
+    },
+    {
+      "type": "bullets",
+      "eyebrow": "APPENDIX",
+      "headline": "Contract and compliance facts",
+      "items": [
+        "AI training opt out on Unity data, in place since 2025",
+        "Scanning runs locally in Unity CI today",
+        "Azure Marketplace purchasing is available",
+        "GitHub Enterprise behind VPN works with the CI model today",
+        "3 year term is the pricing basis, 2 year is precedent"
+      ],
+      "notes": "The AI training opt out and local CI scanning are standing terms from the land deal. Do not promise a GitHub Enterprise Server app at 20,000 repo scale; that is an open feature request. Hybrid and on premises asks are also open items."
+    }
+  ]
+}
