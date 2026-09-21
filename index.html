@@ -607,8 +607,7 @@
     $("arc-ppf1").textContent = usd2(r.perFix);
     $("arc-ppf2").textContent = usd2(r.perFix * (1 - s.red));
 
-    $("arc-model-hint").textContent = usd2(r.perFix) + " / fix · " + multStr(m.mult) + " the cost of " + P.ref.name + " · " +
-      usd2(m.input) + " in / " + usd2(m.output) + " out per MTok";
+    $("arc-model-hint").textContent = usd2(r.perFix) + " / fix · " + multStr(m.mult) + " the cost of " + P.ref.name;
     refreshPricingFix(s.ref);
 
     fillRow("a", byId[sel.a], s); fillRow("sel", m, s); fillRow("b", byId[sel.b], s);
