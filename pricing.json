@@ -1,0 +1,27 @@
+{
+  "_readme": "Model pricing for the Agentic Remediation ROI Calculator. Edit this file and commit; the page reloads it on every visit. Prices are public list prices in USD per million tokens. The multiplier used by the math is output ÷ the reference model's output (Opus 4.8 = $25 → 1.00×). Add \"multiplier\": 1.2 to a model to override that. Order here = order in the dropdowns. See README.md.",
+  "asOf": "September 2026",
+  "reference": "claude-opus-4-8",
+  "default": "claude-opus-5",
+  "compare": ["gpt-5-5", "claude-fable-5"],
+  "models": [
+    { "id": "claude-fable-5-1",       "provider": "Claude", "name": "Claude Fable 5.1",       "input": 10,   "output": 50 },
+    { "id": "claude-fable-5",         "provider": "Claude", "name": "Claude Fable 5",         "input": 10,   "output": 50 },
+    { "id": "claude-opus-5",          "provider": "Claude", "name": "Claude Opus 5",          "input": 5,    "output": 25 },
+    { "id": "claude-opus-4-8",        "provider": "Claude", "name": "Claude Opus 4.8",        "input": 5,    "output": 25 },
+    { "id": "claude-sonnet-5",        "provider": "Claude", "name": "Claude Sonnet 5",        "input": 2,    "output": 10 },
+    { "id": "claude-sonnet-4-6",      "provider": "Claude", "name": "Claude Sonnet 4.6",      "input": 3,    "output": 15 },
+    { "id": "claude-haiku-4-5",       "provider": "Claude", "name": "Claude Haiku 4.5",       "input": 1,    "output": 5 },
+
+    { "id": "gpt-6-astra",            "provider": "OpenAI", "name": "GPT-6 Astra",            "input": 10,   "output": 50 },
+    { "id": "gpt-5-5",                "provider": "OpenAI", "name": "GPT-5.5",                "input": 5,    "output": 30 },
+    { "id": "gpt-5-4",                "provider": "OpenAI", "name": "GPT-5.4",                "input": 2.5,  "output": 15 },
+    { "id": "gpt-5-3-codex",          "provider": "OpenAI", "name": "GPT-5.3 Codex",          "input": 1.75, "output": 14 },
+    { "id": "gpt-5-4-mini",           "provider": "OpenAI", "name": "GPT-5.4 mini",           "input": 0.75, "output": 4.5 },
+
+    { "id": "gemini-3-1-pro-preview", "provider": "Gemini", "name": "Gemini 3.1 Pro Preview", "input": 2,    "output": 12 },
+    { "id": "gemini-3-5-flash",       "provider": "Gemini", "name": "Gemini 3.5 Flash",       "input": 1.5,  "output": 9 },
+    { "id": "gemini-2-5-pro",         "provider": "Gemini", "name": "Gemini 2.5 Pro",         "input": 1.25, "output": 10 },
+    { "id": "gemini-3-1-flash-lite",  "provider": "Gemini", "name": "Gemini 3.1 Flash-Lite",  "input": 0.25, "output": 1.5 }
+  ]
+}
