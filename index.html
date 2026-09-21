@@ -123,7 +123,14 @@
   #endor-arc .arc-bar-head{display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px;}
   #endor-arc .arc-bar-head span:last-child{font-variant-numeric:tabular-nums;}
   #endor-arc .arc-track{display:flex;height:30px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.05);}
-  #endor-arc .arc-seg{height:100%;min-width:0;transition:width .45s cubic-bezier(.22,1,.36,1);}
+  #endor-arc .arc-seg{height:100%;min-width:0;transition:width .45s cubic-bezier(.22,1,.36,1),filter .12s;cursor:default;}
+  #endor-arc .arc-seg:hover{filter:brightness(1.15);}
+  #endor-arc .arc-tip{position:fixed;z-index:50;pointer-events:none;background:#000;border:1px solid var(--line2);border-radius:6px;padding:7px 10px;
+    font-size:12.5px;color:var(--text);white-space:nowrap;box-shadow:0 6px 22px rgba(0,0,0,.55);transform:translate(-50%,calc(-100% - 10px));
+    opacity:0;transition:opacity .12s;}
+  #endor-arc .arc-tip.is-on{opacity:1;}
+  #endor-arc .arc-tip.is-below{transform:translate(-50%,12px);}
+  #endor-arc .arc-tip b{color:var(--green);font-weight:600;font-variant-numeric:tabular-nums;margin-left:8px;}
   #endor-arc .arc-seg--seat{background:var(--seat);}
   #endor-arc .arc-seg--tok{background:var(--tok);}
   #endor-arc .arc-seg--avoid{background:repeating-linear-gradient(135deg,rgba(255,255,255,.22) 0 3px,transparent 3px 9px);}
@@ -582,7 +589,13 @@
   }
 
   /* ── render ── */
-  function seg(id, value, total){ $(id).style.width = (total > 0 ? value / total * 100 : 0) + "%"; }
+  function seg(id, value, total, label){
+    var el = $(id);
+    el.style.width = (total > 0 ? value / total * 100 : 0) + "%";
+    el.setAttribute("data-tip-label", label);
+    el.setAttribute("data-tip-value", usd0(value));
+    el.setAttribute("aria-label", label + ": " + usd0(value));
+  }
   function fillRow(k, m, s){
     if(!m) return;
     var c = compute(s, m.mult);
@@ -600,8 +613,11 @@
     $("arc-total-no").textContent  = usd0(r.totalNo);
     $("arc-total-yes").textContent = usd0(r.totalYes);
 
-    seg("arc-b1-seat", r.seatFloor, r.totalNo); seg("arc-b1-tok", r.tokenBill, r.totalNo);
-    seg("arc-b2-seat", r.seatFloor, r.totalNo); seg("arc-b2-tok", r.tokenWith, r.totalNo); seg("arc-b2-avoid", r.savings, r.totalNo);
+    seg("arc-b1-seat", r.seatFloor, r.totalNo, "Seat licenses");
+    seg("arc-b1-tok",  r.tokenBill, r.totalNo, "Agent token bill at list price");
+    seg("arc-b2-seat", r.seatFloor, r.totalNo, "Seat licenses");
+    seg("arc-b2-tok",  r.tokenWith, r.totalNo, "Agent token bill with Endor Labs");
+    seg("arc-b2-avoid", r.savings,  r.totalNo, "Avoided with Endor context");
 
     $("arc-fixes-year").textContent = num0.format(r.fixes);
     $("arc-ppf1").textContent = usd2(r.perFix);
@@ -673,6 +689,27 @@
   });
 
   $("arc-pdf").addEventListener("click", function(e){ e.preventDefault(); });
+
+  /* ── bar tooltips: hover (or tap) a chunk to see its dollar value ── */
+  var tip = document.createElement("div"); tip.className = "arc-tip"; tip.setAttribute("role", "tooltip"); root.appendChild(tip);
+  var tipTimer = null;
+  function showTip(el){
+    var r = el.getBoundingClientRect();
+    if(r.width < 1) return;
+    tip.innerHTML = esc(el.getAttribute("data-tip-label")) + "<b>" + esc(el.getAttribute("data-tip-value")) + "</b>";
+    var below = r.top < 64;
+    tip.classList.toggle("is-below", below);
+    tip.style.left = (r.left + r.width / 2) + "px";
+    tip.style.top  = (below ? r.bottom : r.top) + "px";
+    tip.classList.add("is-on");
+  }
+  function hideTip(){ tip.classList.remove("is-on"); }
+  [].slice.call(root.querySelectorAll(".arc-seg")).forEach(function(el){
+    el.addEventListener("mouseenter", function(){ showTip(el); });
+    el.addEventListener("mouseleave", hideTip);
+    el.addEventListener("click", function(){ showTip(el); clearTimeout(tipTimer); tipTimer = setTimeout(hideTip, 2000); });
+  });
+  window.addEventListener("scroll", hideTip, { passive: true });
 
   /* ── boot: built-in copy first (no flash), then the live pricing.json ── */
   var fallback = { models: [] };
