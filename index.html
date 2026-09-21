@@ -191,7 +191,7 @@
   #endor-arc .arc-sources li::before{content:"";position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--gdark);}
   #endor-arc .arc-sources b{color:var(--text);font-weight:500;}
   #endor-arc .arc-pricing{margin-top:24px;}
-  #endor-arc .arc-pricing table{min-width:540px;}
+  #endor-arc .arc-pricing table{min-width:640px;}
   #endor-arc .arc-pricing th,#endor-arc .arc-pricing td{text-align:right;padding:10px 12px;}
   #endor-arc .arc-pricing th:first-child,#endor-arc .arc-pricing td:first-child{text-align:left;width:auto;}
   #endor-arc .arc-pricing tr.arc-group td{color:var(--muted2);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding-top:16px;padding-bottom:6px;border-bottom:0;}
@@ -257,7 +257,7 @@
         <div class="arc-field">
           <label for="arc-seat-n">Coding agent seat ($ / user / month)</label>
           <div class="arc-pill"><span class="arc-prefix">$</span><input type="number" id="arc-seat-n" min="0" max="1000" step="1" value="100" inputmode="decimal" aria-label="Coding agent seat cost per user per month"></div>
-          <p class="arc-hint">Per-user cost of Claude Code, Codex, etc. · public trackers: $100–150 · default $100</p>
+          <p class="arc-hint">Per-user cost of Claude Code, Codex, etc. · $100/month is typical</p>
         </div>
 
         <div class="arc-field">
@@ -398,7 +398,7 @@
         <ul class="arc-sources">
           <li><b>Coding agent seat, $100/user/mo:</b> Team Premium annual pricing for Claude Code, public trackers, Apr 2026. Public range $100–150; default uses the low end. Enter your own per-user cost for Claude Code, Codex, or another coding harness.</li>
           <li><b>Reference $20/fix:</b> each remediation ships as a PR — anchored on Anthropic's published Code Review band of $15–25/PR for <span data-ref-name>Claude Opus 4.8</span> (Jun 2026), midpoint. Claude Opus 5 is list-priced identically ($5 / $25 per MTok), so the default model runs at 1.00×.</li>
-          <li><b>Model multipliers:</b> each model's output-token list price relative to the <span data-ref-name>Claude Opus 4.8</span> reference ($25 / MTok). Full table below.</li>
+          <li><b>Cost vs. <span data-ref-name>Claude Opus 4.8</span>:</b> each model's output-token list price relative to the reference ($25 / MTok). The calculator multiplies your cost per fix by that ratio. Full table below.</li>
           <li><b>8 fixes/dev/month:</b> industry research puts the average at ~2 PRs per developer per week.</li>
           <li><b>Token reduction, up to 91.7%:</b> Endor Labs benchmark (442 AppSec prompts, 12 OSS projects, 6 languages) comparing agents with deterministic security context vs. rediscovering context themselves. Default 80% is conservative; the slider allows up to 99% for what-if scenarios.</li>
           <li><b>Scope:</b> seat licenses + per-fix token spend only. Excludes engineering time, CI minutes, orchestration infra. Public pricing — not an Anthropic quote.</li>
@@ -406,7 +406,7 @@
         <div class="arc-pricing">
           <div class="arc-table-wrap">
             <table>
-              <thead><tr><th scope="col">Model</th><th scope="col">Input $/MTok</th><th scope="col">Output $/MTok</th><th scope="col">Multiplier</th></tr></thead>
+              <thead><tr><th scope="col">Model</th><th scope="col">Input $/MTok</th><th scope="col">Output $/MTok</th><th scope="col" id="arc-pricing-mult-h">Cost vs. Claude Opus 4.8</th><th scope="col" id="arc-pricing-fix-h">$/Fix at $20</th></tr></thead>
               <tbody id="arc-pricing-body"></tbody>
             </table>
           </div>
@@ -525,41 +525,43 @@
   }
 
   /* ── selects ── */
-  function optLabel(m, ref){ return ref != null ? m.name + "  ·  " + usd2(ref * m.mult) + " / fix" : m.name; }
-  function optionsHtml(excludeId, disabledId, ref){
+  function optionsHtml(excludeId, disabledId){
     return groups().map(function(g){
       var items = g.items.filter(function(m){ return m.id !== excludeId; });
       if(!items.length) return "";
       return '<optgroup label="' + esc(g.name) + '">' + items.map(function(m){
-        return '<option value="' + esc(m.id) + '"' + (m.id === disabledId ? ' disabled' : '') + '>' + esc(optLabel(m, ref)) + '</option>';
+        return '<option value="' + esc(m.id) + '"' + (m.id === disabledId ? ' disabled' : '') + '>' + esc(m.name) + '</option>';
       }).join("") + '</optgroup>';
     }).join("");
   }
   function buildModelSelect(){
-    var s = $("arc-model"); s.innerHTML = optionsHtml(null, null, state().ref); s.value = sel.model;
-  }
-  function refreshModelLabels(ref){
-    [].slice.call($("arc-model").options).forEach(function(o){ var m = byId[o.value]; if(m) o.textContent = optLabel(m, ref); });
+    var s = $("arc-model"); s.innerHTML = optionsHtml(null, null); s.value = sel.model;
   }
   function buildCompareSelects(){
     var a = $("arc-cmp-a"), b = $("arc-cmp-b");
-    a.innerHTML = optionsHtml(sel.model, sel.b, null); if(sel.a) a.value = sel.a;
-    b.innerHTML = optionsHtml(sel.model, sel.a, null); if(sel.b) b.value = sel.b;
+    a.innerHTML = optionsHtml(sel.model, sel.b); if(sel.a) a.value = sel.a;
+    b.innerHTML = optionsHtml(sel.model, sel.a); if(sel.b) b.value = sel.b;
   }
   function buildPricingTable(source){
     var html = "";
     groups().forEach(function(g){
-      html += '<tr class="arc-group"><td colspan="4">' + esc(g.name) + '</td></tr>';
+      html += '<tr class="arc-group"><td colspan="5">' + esc(g.name) + '</td></tr>';
       g.items.forEach(function(m){
         var isRef = m.id === P.ref.id;
         html += '<tr' + (isRef ? ' class="arc-active"' : '') + '><td>' + esc(m.name) + (isRef ? ' <span class="arc-tag">Reference</span>' : '') +
-                '</td><td>' + usd2(m.input) + '</td><td>' + usd2(m.output) + '</td><td>' + multStr(m.mult) + '</td></tr>';
+                '</td><td>' + usd2(m.input) + '</td><td>' + usd2(m.output) + '</td><td>' + multStr(m.mult) + '</td><td data-fix-for="' + esc(m.id) + '"></td></tr>';
       });
     });
     $("arc-pricing-body").innerHTML = html;
-    $("arc-pricing-note").textContent = "Public list prices per million tokens as of " + P.asOf + ". Multiplier = output price ÷ " + P.ref.name +
-      " output price (" + usd2(P.ref.output) + " / MTok); the calculator multiplies your cost per fix by it. " +
+    $("arc-pricing-mult-h").textContent = "Cost vs. " + P.ref.name;
+    $("arc-pricing-note").textContent = "Public list prices per million tokens as of " + P.asOf + ". Cost vs. " + P.ref.name +
+      " = output price ÷ " + usd2(P.ref.output) + " / MTok. $/Fix = your Current Cost Per Fix × that ratio. " +
       (source === "live" ? "Loaded from pricing.json." : "Using the built-in copy of pricing.json.");
+    refreshPricingFix(state().ref);
+  }
+  function refreshPricingFix(ref){
+    $("arc-pricing-fix-h").textContent = "$/Fix at " + usd2(ref);
+    [].slice.call(root.querySelectorAll("[data-fix-for]")).forEach(function(td){ var m = byId[td.getAttribute("data-fix-for")]; if(m) td.textContent = usd2(ref * m.mult); });
   }
 
   /* ── state + math (Steps A, B, C from the spreadsheet) ── */
@@ -605,9 +607,9 @@
     $("arc-ppf1").textContent = usd2(r.perFix);
     $("arc-ppf2").textContent = usd2(r.perFix * (1 - s.red));
 
-    $("arc-model-hint").textContent = usd2(r.perFix) + " / fix · " + multStr(m.mult) + " the " + P.ref.name + " reference · " +
+    $("arc-model-hint").textContent = usd2(r.perFix) + " / fix · " + multStr(m.mult) + " the cost of " + P.ref.name + " · " +
       usd2(m.input) + " in / " + usd2(m.output) + " out per MTok";
-    refreshModelLabels(s.ref);
+    refreshPricingFix(s.ref);
 
     fillRow("a", byId[sel.a], s); fillRow("sel", m, s); fillRow("b", byId[sel.b], s);
     $("arc-sel-name").textContent = m.name;

@@ -45,10 +45,10 @@ Layout and copy are otherwise identical to production. Everything below is a del
 **Inputs**
 1. `PRs/Dev/Month` → **`Fixes/Dev/Month`**. Hint unchanged.
 2. Each slider now has an **editable number** where the green value was, so a 3,000-developer org can be entered. Slider range stays 10–1,000 developers (typed values above the slider max are allowed; the slider pins at max).
-3. `Seat license ($ / seat / month)` → **`Coding agent seat ($ / user / month)`**. Hint: "Per-user cost of Claude Code, Codex, etc. · public trackers: $100–150 · default $100". Range **$0–$1,000** (production clamps to $50–$200, which made $0 or $20 snap back to $50). `$` prefix inside the field.
+3. `Seat license ($ / seat / month)` → **`Coding agent seat ($ / user / month)`**. Hint: "Per-user cost of Claude Code, Codex, etc. · $100/month is typical". Range **$0–$1,000** (production clamps to $50–$200, which made $0 or $20 snap back to $50). `$` prefix inside the field.
 4. `Current Cost Per Fix`: **`$` prefix inside the field**, new hint "Reference price on Claude Opus 4.8 · other models scale from it · default $20". The selected model's resulting `$/fix` and multiplier are shown under the model dropdown so the reference-vs-selected relationship is visible.
 5. `Reduction in Tokens Required to Remediate`: slider max **91.7 → 99**, with a tick mark at 91.7 (the benchmark). Hint gains "(tick mark)".
-6. **Remediation model dropdown lists every model in `pricing.json`**, grouped by provider, each option showing its `$/fix` at the current reference price. **Default model is Claude Opus 5** (same list price as Opus 4.8, so default results are unchanged: $230,400 / 49.2%).
+6. **Remediation model dropdown lists every model in `pricing.json`**, grouped by provider (model names only; the `$/fix` for the selected model shows in the hint underneath). **Default model is Claude Opus 5** (same list price as Opus 4.8, so default results are unchanged: $230,400 / 49.2%).
 
 **Comparison table**
 7. `All Three Models at Your Volume` → **`Compare Across Models`**.
@@ -56,7 +56,7 @@ Layout and copy are otherwise identical to production. Everything below is a del
 
 **Under the hood, sources, disclaimer**
 9. **Step-by-step numbers are now live.** On production they are static text and Step B reads "150 × 14 × 12 = 25,200 fixes … $504,000" regardless of inputs (does not match the defaults).
-10. Sources: seat and reference bullets reworded to match the new labels; multiplier bullet explains the derivation; the **pricing table renders from `pricing.json`** (Model / Input / Output / Multiplier, grouped by provider, reference row tagged). Production's table is static with five models and duplicate element ids.
+10. Sources: seat and reference bullets reworded to match the new labels; multiplier bullet explains the derivation; the **pricing table renders from `pricing.json`** (Model / Input $/MTok / Output $/MTok / Cost vs. Claude Opus 4.8 / $/Fix at the current Current Cost Per Fix, grouped by provider, reference row tagged). The "Cost vs." column is the multiplier. Production's table is static with five models and duplicate element ids.
 11. Disclaimer "as of mid-2026" → **"as of {asOf}"** from `pricing.json`.
 
 **PDF (handled by the web team, not in this prototype)**
